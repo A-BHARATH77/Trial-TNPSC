@@ -334,3 +334,60 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Landing Page Styles */
+.center-container {
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-title {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.landing-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+}
+
+.landing-grid {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.landing-card {
+  flex: 1;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 3rem 2rem;
+}
+
+.landing-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.landing-card h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.landing-card p {
+  color: var(--text-secondary);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.back-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}

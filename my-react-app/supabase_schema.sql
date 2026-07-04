@@ -4,8 +4,12 @@ CREATE TABLE uploads (
   type text NOT NULL,
   content text NOT NULL,
   file_url text,
+  category text NOT NULL DEFAULT 'prelims',
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Note: Run this line if the table already exists:
+-- ALTER TABLE uploads ADD COLUMN category text NOT NULL DEFAULT 'prelims';
 
 -- Create the marks table with a foreign key to uploads
 CREATE TABLE marks (

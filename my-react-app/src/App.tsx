@@ -14,6 +14,7 @@ interface UploadItem {
   type: 'pdf' | 'link';
   content: string;
   file_url?: string;
+  category: string;
   marksHistory: MarkEntry[];
 }
 
@@ -26,19 +27,29 @@ function App() {
   const [marksInput, setMarksInput] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [category, setCategory] = useState<'prelims' | 'mains' | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (category) {
+      fetchData();
+    }
+  }, [category]);
 
   const fetchData = async () => {
+    if (!category) return;
+    
+    setIsLoadingData(true);
+
     const { data: uploadsData, error: uploadsError } = await supabase
       .from('uploads')
       .select('*')
+      .eq('category', category)
       .order('created_at', { ascending: true });
 
     if (uploadsError) {
       console.error("Error fetching uploads:", uploadsError);
+      setIsLoadingData(false);
       return;
     }
 
@@ -49,6 +60,7 @@ function App() {
 
     if (marksError) {
       console.error("Error fetching marks:", marksError);
+      setIsLoadingData(false);
       return;
     }
 
@@ -58,6 +70,7 @@ function App() {
     }));
 
     setUploads(merged);
+    setIsLoadingData(false);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +101,7 @@ function App() {
         // Insert into uploads table
         const { data: insertData, error: insertError } = await supabase
           .from('uploads')
-          .insert([{ type: 'pdf', content: file.name, file_url: fileUrl }])
+          .insert([{ type: 'pdf', content: file.name, file_url: fileUrl, category }])
           .select()
           .single();
 
@@ -116,7 +129,7 @@ function App() {
     if (linkValue.trim()) {
       const { data, error } = await supabase
         .from('uploads')
-        .insert([{ type: 'link', content: linkValue.trim() }])
+        .insert([{ type: 'link', content: linkValue.trim(), category }])
         .select()
         .single();
 
@@ -174,10 +187,38 @@ function App() {
     setMarksInput("");
   };
 
+  if (!category) {
+    return (
+      <div className="container center-container">
+        <h1 className="title landing-title">TNPSC Portal</h1>
+        <p className="landing-subtitle">Select a section to proceed</p>
+        <div className="landing-grid">
+          <div className="glass-box landing-card" onClick={() => setCategory('prelims')}>
+            <div className="landing-icon">📝</div>
+            <h2>Prelims</h2>
+            <p>Upload and manage Prelims questions.</p>
+          </div>
+          <div className="glass-box landing-card" onClick={() => setCategory('mains')}>
+            <div className="landing-icon">🏛️</div>
+            <h2>Mains</h2>
+            <p>Upload and manage Mains questions.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
       <header className="header">
-        <h1 className="title">Group One Questions</h1>
+        <div className="header-left">
+          <button className="btn glass-btn back-btn" onClick={() => setCategory(null)}>
+            ← Back
+          </button>
+          <h1 className="title">
+            {category === 'prelims' ? 'Prelims Questions' : 'Mains Questions'}
+          </h1>
+        </div>
         <div className="options">
           <label className="btn glass-btn">
             Upload PDF
@@ -212,7 +253,12 @@ function App() {
       )}
 
       <main className="content">
-        {uploads.length > 0 ? (
+        {isLoadingData ? (
+          <div className="empty-state" style={{ border: 'none' }}>
+            <div className="loader-spinner"></div>
+            <p style={{ marginTop: '1rem' }}>Loading questions...</p>
+          </div>
+        ) : uploads.length > 0 ? (
           <div className="grid">
             {uploads.map(item => (
               <div key={item.id} className="box glass-box">
